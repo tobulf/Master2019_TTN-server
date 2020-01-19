@@ -1,6 +1,6 @@
 %% Import csv files, and extract necesarry data: 
 
-GW_olav = csvread('Logs 21.12.2018.csv');
+GW_olav = csvread('Logs 19.1.2020.csv');
 disp(GW_olav)
 %t_olav = datetime(GW_olav(:,2), 'ConvertFrom', 'posixtime','TimeZone','Europe/Oslo');
 

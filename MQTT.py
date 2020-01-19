@@ -3,7 +3,7 @@ from time import sleep
 from datetime import datetime
 from base64 import*
 from threading import*
-from Logger import WriteMetaToFile
+from Logger import WritePayloadDataToFile
 import json
 
 access_key = "ttn-account-v2.3SWn_pzU0kjQNqJjXVyXkFUJhVfsxTWL6rSKyn_Znt8"
@@ -35,7 +35,8 @@ def uplink_callback(msg, client):
     #print("Payload", header)#int.from_bytes(uplink_payload[0:2], byteorder='big', signed=True))
     # Log the metadata to file.
     #mtx.acquire()
-    WriteMetaToFile(msg.dev_id, uplink_payload, meta, date)
+    WritePayloadDataToFile(msg.dev_id, uplink_payload, meta, date)
+    clien.send(msg.dev_id, b64encode("0".encode()).decode("utf-8"), msg.port, sched="first")
     #mtx.release()
     # if it is bullshit value:
     #if code == 2:
