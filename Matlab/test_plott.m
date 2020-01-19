@@ -1,7 +1,10 @@
 %% Import csv files, and extract necesarry data: 
 
 GW_olav = csvread('Logs 19.1.2020.csv');
+capture = csvread('capture.csv');
 disp(GW_olav)
+diff = GW_olav(1,5:484)-capture;
+
 %t_olav = datetime(GW_olav(:,2), 'ConvertFrom', 'posixtime','TimeZone','Europe/Oslo');
 
 t_studenthytta_start = datetime('2018-11-19 10:45:00','TimeZone','Europe/Oslo');

@@ -12,11 +12,15 @@ testpayload = bytearray( b'\x02\x01"\x04\x8d\xfcn\x00 \x03\x90\xfco\x00\x1e\x03\
 def WritePayloadDataToFile(dev_id, payload, Metadata, date):
     payload_data = bytearray()
     header = int.from_bytes(payload[0:1], byteorder='big')
+    battery_lvl = 0
+    light_lvl = 0
     dev_timestamp = 0
     if header == 4:
         payload_data = payload[1:]
     elif header == 2:
-        payload_data = payload[1:]
+        payload_data = payload[3:]
+        battery_lvl = int.from_bytes(payload[1:2], byteorder='big')
+        light_lvl = int.from_bytes(payload[2:3], byteorder='big')
         dev_timestamp = int.from_bytes(payload[1:5], byteorder='big')
 
     directory = 'Logs '+str(dev_id)
@@ -31,6 +35,9 @@ def WritePayloadDataToFile(dev_id, payload, Metadata, date):
         Last_line = open(directory+"/last_line.txt",'w+')
         temp_line = Last_line.read()
         templist = []
+        if header == 2:
+            templist.append(battery_lvl)
+            templist.append(light_lvl)
         try:
             for i in range(0, len(payload_data), 2):
                 templist.append(int.from_bytes(payload_data[(i):(i+2)], byteorder='big', signed=True))
@@ -59,6 +66,9 @@ def WritePayloadDataToFile(dev_id, payload, Metadata, date):
         temp_line = Last_line.read()
         Last_line.close()
         templist = []
+        if header == 2:
+            templist.append(battery_lvl)
+            templist.append(light_lvl)
         try:
             for i in range(0, len(payload_data), 2):
                 templist.append(int.from_bytes(payload_data[(i):(i+2)], byteorder='big', signed=True))
