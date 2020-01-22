@@ -1,6 +1,6 @@
 %% Import csv files, and extract necesarry data: 
 
-GW_olav = csvread('Logs 19.1.2020.csv');
+GW_olav = csvread('Logs 21.1.2020.csv');
 capture = csvread('capture.csv');
 disp(GW_olav)
 diff = GW_olav(1,5:484)-capture;
