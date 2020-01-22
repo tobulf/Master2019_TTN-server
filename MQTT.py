@@ -27,6 +27,10 @@ def check_code(code, list):
 def uplink_callback(msg, client):
     global date, mtx
     print("Received uplink from ", msg.dev_id, datetime.now())
+    if msg.port == 2:
+        print("EVENT!")
+    if msg.port == 8:
+        print("Still alive...")
     #Convert received data to int:
     uplink_payload = b64decode(msg.payload_raw)
     header = int.from_bytes(uplink_payload[0:1], byteorder='big')
@@ -35,7 +39,7 @@ def uplink_callback(msg, client):
     #print("Payload", header)#int.from_bytes(uplink_payload[0:2], byteorder='big', signed=True))
     # Log the metadata to file.
     #mtx.acquire()
-    WritePayloadDataToFile(msg.dev_id, uplink_payload, meta, date)
+    WritePayloadDataToFile(msg.dev_id, msg.port, uplink_payload, meta, date)
     clien.send(msg.dev_id, b64encode("0".encode()).decode("utf-8"), msg.port, sched="first")
     #mtx.release()
     # if it is bullshit value:

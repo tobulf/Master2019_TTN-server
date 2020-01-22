@@ -9,25 +9,24 @@ Datarates = ["SF12BW125", "SF11BW125", "SF10BW125","SF9BW125", "SF8BW125", "SF7B
 current_directory = os.getcwd()
 testpayload = bytearray( b'\x02\x01"\x04\x8d\xfcn\x00 \x03\x90\xfco\x00\x1e\x03\x8d\xfcp\x00"\x03\x90\xfcn\x00"\x03\x8e\xfcq\x00!\x03\x8e\xfcl\x00!\x03\x8d\xfcn\x00 \x03\x8e\xfcq')
 
-def WritePayloadDataToFile(dev_id, payload, Metadata, date):
+def WritePayloadDataToFile(dev_id, port, payload, Metadata, date):
     payload_data = bytearray()
-    header = int.from_bytes(payload[0:1], byteorder='big')
     battery_lvl = 0
     light_lvl = 0
     dev_timestamp = 0
-    if header == 4:
-        payload_data = payload[1:]
-    elif header == 2:
-        payload_data = payload[3:]
-        battery_lvl = int.from_bytes(payload[1:2], byteorder='big')
-        light_lvl = int.from_bytes(payload[2:3], byteorder='big')
-        dev_timestamp = int.from_bytes(payload[1:5], byteorder='big')
-
+    if port == 4:
+        payload_data = payload
+    elif port == 2 or port == 8:
+        dev_timestamp = int.from_bytes(payload[0:4], byteorder='big')
+        battery_lvl = int.from_bytes(payload[4:5], byteorder='big')
+        light_lvl = int.from_bytes(payload[5:6], byteorder='big')
+        temperature = int.from_bytes(payload[6:7], byteorder='big', signed=True)
+        payload_data = payload[7:]
     directory = 'Logs '+str(dev_id)
     final_directory = os.path.join(current_directory, (r''+directory))
     if not os.path.exists(final_directory):
         os.makedirs(final_directory)
-    servertime =  int(dp.parse(str(Metadata[0])).timestamp())+3600
+    servertime =  int(dp.parse(str(Metadata[0])).timestamp())
     try:
         Log = open(directory+"/Logs "+date+".csv",'x')
         Last_line = open(directory+"/last_line.txt",'x')
@@ -35,9 +34,10 @@ def WritePayloadDataToFile(dev_id, payload, Metadata, date):
         Last_line = open(directory+"/last_line.txt",'w+')
         temp_line = Last_line.read()
         templist = []
-        if header == 2:
+        if port == 2  or port == 8:
             templist.append(battery_lvl)
             templist.append(light_lvl)
+            templist.append(temperature)
         try:
             for i in range(0, len(payload_data), 2):
                 templist.append(int.from_bytes(payload_data[(i):(i+2)], byteorder='big', signed=True))
@@ -48,12 +48,13 @@ def WritePayloadDataToFile(dev_id, payload, Metadata, date):
         line = line[1:len(line)-1].replace(" ","")
         if temp_line != line:
             Last_line.write(line)
-            if header == 2:
-                templist.insert(0,servertime)
-                templist.insert(1, dev_timestamp)
+            if port == 2  or port == 8:
+                templist.insert(0, port)
+                templist.insert(1, servertime)
+                templist.insert(2, dev_timestamp)
                 line = dumps(templist)
                 line = line[1:len(line)-1].replace(" ","")
-            if header != 4: 
+            if port != 4: 
                 line = line
             else:
                 line = "," + line
@@ -66,9 +67,10 @@ def WritePayloadDataToFile(dev_id, payload, Metadata, date):
         temp_line = Last_line.read()
         Last_line.close()
         templist = []
-        if header == 2:
+        if port == 2  or port == 8:
             templist.append(battery_lvl)
             templist.append(light_lvl)
+            templist.append(temperature)
         try:
             for i in range(0, len(payload_data), 2):
                 templist.append(int.from_bytes(payload_data[(i):(i+2)], byteorder='big', signed=True))
@@ -81,12 +83,13 @@ def WritePayloadDataToFile(dev_id, payload, Metadata, date):
             Last_line = open(directory+"/last_line.txt",'w')
             Last_line.write(line)
             Last_line.close()
-            if header == 2:
-                templist.insert(0,servertime)
-                templist.insert(1, dev_timestamp)
+            if port == 2  or port == 8:
+                templist.insert(0, port)
+                templist.insert(1,servertime)
+                templist.insert(2, dev_timestamp)
                 line = dumps(templist)
                 line = line[1:len(line)-1].replace(" ","")
-            if header != 4: 
+            if port != 4: 
                 line = "\n" + line
             else:
                 line = "," + line
@@ -109,5 +112,5 @@ meta = ["2018-11-08T11:41:52.772067729Z", 868.1, "LORA", "SF12BW125", 1155072000
 ["ntnu1", True, 2597174828, "2018-11-08T11:41:52Z", 0, -119, -15, 1, 63.41831, 10.400998, 60, "registry"]]
 ]
 
-WritePayloadDataToFile("lorakeypad", testpayload, meta, some_date)
-WritePayloadDataToFile("lorakeypad", testpayload, meta, some_date)
+#WritePayloadDataToFile("lorakeypad", testpayload, meta, some_date)
+#WritePayloadDataToFile("lorakeypad", testpayload, meta, some_date)
